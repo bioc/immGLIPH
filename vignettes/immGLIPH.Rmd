@@ -125,16 +125,28 @@ Alternative column names are automatically recognized (e.g., `cdr3`, `v_gene`,
 When working with single-cell immune repertoire data, you can use
 scRepertoire to prepare your data and pass the output directly to immGLIPH.
 
-```{r eval=FALSE}
+```{r}
 library(scRepertoire)
+data("contig_list")
 
 # After processing with cellranger/etc, combine contigs
-combined <- combineTCR(contig_list[1:2],
-                        samples = c("P1", "P2"))
+combined <- combineTCR(contig_list[seq_len(2)],
+                       samples = c("P1", "P2"))
+
+# Take a small slice so the example runs quickly. In real use, pass
+# all samples and rely on the bundled reference downloaded by
+# getGLIPHreference().
+combined_small <- lapply(combined, function(x) x[seq_len(50), ])
+
+# Use a small custom reference built from the bundled example data
+small_ref <- gliph_input_data[, c("CDR3b", "TRBV")]
 
 # Pass scRepertoire output directly to runGLIPH
-results <- runGLIPH(combined, 
-                    method = "gliph2")
+results_sc <- runGLIPH(combined_small,
+                       method     = "gliph2",
+                       refdb_beta = small_ref,
+                       sim_depth  = 100,
+                       n_cores    = 1)
 ```
 
 For **SingleCellExperiment** objects that already contain TCR metadata (e.g.,
@@ -142,14 +154,17 @@ added via `scRepertoire::combineExpression()`), immGLIPH extracts the receptor
 data automatically using `immApex::getIR()`. Here is an example using the
 bundled `gliph_sce` dataset:
 
-```{r eval=FALSE}
+```{r}
 library(SingleCellExperiment)
 data("gliph_sce")
 
 # SingleCellExperiment object with TCR info in colData
-results <- runGLIPH(gliph_sce, 
-                    method = "gliph2", 
-                    chains = "TRB")
+results_sce <- runGLIPH(gliph_sce,
+                        method     = "gliph2",
+                        chains     = "TRB",
+                        refdb_beta = small_ref,
+                        sim_depth  = 100,
+                        n_cores    = 1)
 ```
 
 # The `runGLIPH()` Function
@@ -331,29 +346,24 @@ the original GLIPH publications. Each is available as CD4, CD8, or combined
 Each reference includes pre-computed V-gene usage and CDR3 length frequency
 distributions, which are automatically used for cluster scoring.
 
-```{r eval=FALSE}
-# Use the GLIPH2 mouse reference
-res_mouse <- runGLIPH(
-  cdr3_sequences = mouse_tcr_data,
-  refdb_beta     = "mouse_v1.0_CD48",
-  method         = "gliph2",
-  sim_depth      = 100,
-  n_cores        = 1
-)
-```
+To analyse mouse data, supply mouse CDR3$\beta$ sequences as
+`cdr3_sequences` and set `refdb_beta = "mouse_v1.0_CD48"` (or one of the
+CD4/CD8 subsets in the table). The reference is fetched and cached the
+first time it is requested.
 
 ## Using a Custom Reference Database
 
-You can also supply your own reference as a data frame:
+You can also supply your own reference as a data frame. A minimal
+reference is a two-column table of CDR3$\beta$ amino-acid sequences and
+their corresponding V-gene names. Here we build a small one from the
+bundled `gliph_input_data` for illustration:
 
-```{r eval=FALSE}
-custom_ref <- data.frame(
-  CDR3b = c("CASSLAPGATNEKLFF", "CASSLDRGEVFF", ...),
-  TRBV  = c("TRBV5-1", "TRBV6-2", ...)
-)
+```{r}
+custom_ref <- gliph_input_data[, c("CDR3b", "TRBV")]
+head(custom_ref, 3)
 
 res <- runGLIPH(
-  cdr3_sequences = gliph_input_data[seq_len(200), ],
+  cdr3_sequences = gliph_input_data[seq_len(100), ],
   refdb_beta     = custom_ref,
   method         = "gliph2",
   sim_depth      = 100,
@@ -524,19 +534,24 @@ if (!is.null(res_gliph1$cluster_properties) &&
 
 # Loading Saved Results with `loadGLIPH()`
 
-If you saved results to disk using `result_folder`, you can reload them:
+If you save results to disk using `result_folder`, you can reload them
+later. We use `tempdir()` here so the example does not write to your
+working directory:
 
-```{r eval=FALSE}
-# Save results
-res <- runGLIPH(
-  cdr3_sequences = gliph_input_data,
+```{r}
+out_dir <- file.path(tempdir(), "gliph_results")
+
+res_saved <- runGLIPH(
+  cdr3_sequences = gliph_input_data[seq_len(200), ],
   method         = "gliph2",
-  result_folder  = "my_results/",
+  refdb_beta     = ref_df,
+  result_folder  = out_dir,
+  sim_depth      = 100,
   n_cores        = 1
 )
 
-# Later, reload
-reloaded <- loadGLIPH(result_folder = "my_results/")
+reloaded <- loadGLIPH(result_folder = out_dir)
+names(reloaded)
 ```
 
 # Saving Results to Disk
