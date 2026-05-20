@@ -1,3 +1,16 @@
+# immGLIPH 0.99.5
+
+* Vignette: removed undefined variable references (`mouse_tcr_data`,
+  `contig_list` placeholder, `...` in `custom_ref`). Five previously
+  unevaluated chunks now run during build, using `tempdir()`,
+  `scRepertoire::contig_list`, the bundled `gliph_sce`, and a real
+  reference data frame built from `gliph_input_data`. The three
+  remaining `eval = FALSE` chunks are limited to `BiocManager::install()`
+  calls and the optional `getGLIPHreference()` network download.
+* Consolidated duplicated column-type coercion `for` loops in
+  `loadGLIPH()`, `plotNetwork()` and `clusterScoring()` into a single
+  `lapply()`-based helper, `.coerce_numeric_cols()`.
+
 # immGLIPH 0.99.4
 
 * Added a Validation section to the README with concordance metrics
