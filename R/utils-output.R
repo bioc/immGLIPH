@@ -5,12 +5,10 @@
 #' @keywords internal
 .coerce_numeric_cols <- function(df) {
     if (!is.data.frame(df)) return(df)
-    for (i in seq_len(ncol(df))) {
-        vals <- suppressWarnings(as.numeric(df[, i]))
-        if (!any(is.na(vals))) {
-            df[, i] <- vals
-        }
-    }
+    df[] <- lapply(df, function(col) {
+        vals <- suppressWarnings(as.numeric(col))
+        if (anyNA(vals)) col else vals
+    })
     df
 }
 

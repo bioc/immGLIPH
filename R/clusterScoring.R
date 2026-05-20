@@ -528,13 +528,7 @@ clusterScoring <- function(cluster_list,
   }
 
   # set all theoretical numeric values to numeric
-  if (is.data.frame(res)) {
-    for (i in seq_len(ncol(res))) {
-      if (!suppressWarnings(any(is.na(as.numeric(res[, i]))))) {
-        res[, i] <- as.numeric(res[, i])
-      }
-    }
-  }
+  res <- .coerce_numeric_cols(res)
 
   return(res[, -1])
 }

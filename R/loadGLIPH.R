@@ -120,9 +120,7 @@ loadGLIPH <- function(result_folder = ""){
     fname <- paste0(result_folder, "cluster_member_details.txt")
     if(file.exists(fname)){
       cluster_list <- utils::read.table(file = fname,sep = "\t",quote = "", header = TRUE, stringsAsFactors = FALSE)
-      for(i in seq_len(ncol(cluster_list))){
-        if(suppressWarnings(any(is.na(as.numeric(cluster_list[,i])))) == FALSE) cluster_list[,i] <- as.numeric(cluster_list[,i])
-      }
+      cluster_list <- .coerce_numeric_cols(cluster_list)
       tag_names <- unique(cluster_list$tag)
       cluster_list <- lapply(tag_names, function(x){return(cluster_list[cluster_list$tag == x,-1])})
       names(cluster_list) <- tag_names
@@ -184,9 +182,7 @@ loadGLIPH <- function(result_folder = ""){
       fname <- paste0(result_folder, "cluster_member_details.txt")
       if(file.exists(fname)){
         cluster_list <- utils::read.table(file = fname,sep = "\t",quote = "", header = TRUE, stringsAsFactors = FALSE)
-        for(i in seq_len(ncol(cluster_list))){
-          if(suppressWarnings(any(is.na(as.numeric(cluster_list[,i])))) == FALSE) cluster_list[,i] <- as.numeric(cluster_list[,i])
-        }
+        cluster_list <- .coerce_numeric_cols(cluster_list)
         tag_names <- unique(cluster_list$tag)
         cluster_list <- lapply(tag_names, function(x){return(cluster_list[cluster_list$tag == x,-1])})
         names(cluster_list) <- tag_names
@@ -246,9 +242,7 @@ loadGLIPH <- function(result_folder = ""){
       fname <- paste0(result_folder, "cluster_member_details.txt")
       if(file.exists(fname)){
         cluster_list <- utils::read.table(file = fname,sep = "\t",quote = "", header = TRUE, stringsAsFactors = FALSE)
-        for(i in seq_len(ncol(cluster_list))){
-          if(suppressWarnings(any(is.na(as.numeric(cluster_list[,i])))) == FALSE) cluster_list[,i] <- as.numeric(cluster_list[,i])
-        }
+        cluster_list <- .coerce_numeric_cols(cluster_list)
         tag_names <- unique(cluster_list$tag)
         cluster_list <- lapply(tag_names, function(x){return(cluster_list[cluster_list$tag == x,-1])})
         names(cluster_list) <- tag_names

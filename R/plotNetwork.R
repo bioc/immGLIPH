@@ -159,9 +159,7 @@ plotNetwork <- function(clustering_output = NULL,
   }, BPPARAM = BPPARAM))
   cluster_data_frame <- data.frame(cluster_data_frame, stringsAsFactors = FALSE)
   cluster_data_frame[] <- lapply(cluster_data_frame, as.character)
-  for(i in seq_len(ncol(cluster_data_frame))){
-    if(suppressWarnings(any(is.na(as.numeric(cluster_data_frame[,i])))) == FALSE) cluster_data_frame[,i] <- as.numeric(cluster_data_frame[,i])
-  }
+  cluster_data_frame <- .coerce_numeric_cols(cluster_data_frame)
   cluster_data_frame$ID <- seq_len(nrow(cluster_data_frame))
 
   # For better visualization insert a line break (<br>) between significant HLA alleles in the same cluster
